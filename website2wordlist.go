@@ -14,22 +14,21 @@ import (
 )
 
 func findHTMLFiles(root string) ([]string, error) {
-	return nil, errors.New("findHTMLFiles() not implemented.")
+	return nil, errors.New("findHTMLFiles() not implemented")
 }
 
 func extractWords(fname string) ([]string, error) {
-	return nil, errors.New("extractWords() not implemented.")
+	return nil, errors.New("extractWords() not implemented")
 }
 
 func main() {
-
 	log.Println("Proof of concept converting an HTML document into a Wordlist")
 	fileList, err := findHTMLFiles("demo")
 	if err != nil {
 		log.Fatalf("ERROR: %s\n", err)
 	}
 	log.Printf("DEBUG %v\n", fileList)
-	for i := 0; i < len(fileList); i += 1 {
+	for i := 0; i < len(fileList); i++ {
 		log.Printf("DEBUG process file no %i: %s\n", i, fileList[i])
 		words, err := extractWords(fileList[i])
 		log.Printf("DEBUG words in file: %v : %v\n", words, err)
