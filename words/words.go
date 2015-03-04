@@ -47,12 +47,26 @@ func WordList(src string) ([]string, error) {
 	return nil, errors.New("WordList() not implemented")
 }
 
+func hasString(target string, l []string) bool {
+	for _, s := range l {
+		if target == s {
+			return true
+		}
+	}
+	return false
+}
+
 // MergeWords - given a path and list of words update the Words datastructure
-func (*Words) MergeWords(pathname string, words []string) error {
-	return errors.New("MergePathWordList() not implemented")
+func (w *Words) MergeWords(pathname string, words []string) error {
+	w.Files = append(w.Files, pathname)
+	//w.Words = append(w.Words, words)
+	if hasString(pathname, w.Files) == false {
+		return errors.New("Did not add filename " + pathname)
+	}
+	return nil
 }
 
 // ToJSON - render the Words data structure a JSON
-func (*Words) ToJSON() (string, error) {
+func (w *Words) ToJSON() (string, error) {
 	return "", errors.New("ToJSON() not implemented")
 }
