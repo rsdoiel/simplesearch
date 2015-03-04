@@ -1,6 +1,6 @@
 /**
- * html2wordlist.go - convert the body of a HTML file into a
- * plain text document without any HTML elements.
+ * wsearch.go - convert static website into a JSON list of files
+ * and JSON inverted word list.
  *
  * @author R. S. Doiel, <rsdoiel@usc.edu>
  * copyright (c) 2015 All rights reserved.
@@ -9,29 +9,73 @@
 package main
 
 import (
-	"errors"
+	"./filelist"
+	"./words"
+	"bytes"
+	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 )
 
-func findHTMLFiles(root string) ([]string, error) {
-	return nil, errors.New("findHTMLFiles() not implemented")
+const usageText = `
+ USAGE: %s DIRECTORY_TO_SCAN
+
+ %s scans a directory and generates files.json and words.json.
+
+ OPTIONS:
+
+     -h, --help This help message.
+
+`
+
+func usage(msg string, error_code int) {
+	prog := filepath.Base(os.Args[0])
+	fmt.Printf(usageText, prog, prog)
+	fmt.Println(msg)
+	os.Exit(error_code)
 }
 
-func extractWords(fname string) ([]string, error) {
-	return nil, errors.New("extractWords() not implemented")
+func containsString(l []string, target string) bool {
+	for _, item := range l {
+		if target == item {
+			return true
+		}
+	}
+	return false
 }
 
 func main() {
-	log.Println("Proof of concept converting an HTML document into a Wordlist")
-	fileList, err := findHTMLFiles("demo")
-	if err != nil {
-		log.Fatalf("ERROR: %s\n", err)
+	if containsString(os.Args, "-h") == true || containsString(os.Args, "--help") {
+		usage("", 0)
 	}
-	log.Printf("DEBUG %v\n", fileList)
-	for i := 0; i < len(fileList); i++ {
-		log.Printf("DEBUG process file no %i: %s\n", i, fileList[i])
-		words, err := extractWords(fileList[i])
-		log.Printf("DEBUG words in file: %v : %v\n", words, err)
-		// Push the new words onto the wordlist
+	if len(os.Args) != 2 {
+		usage("Your are missing the directory to scan.", 1)
+	}
+	rootPath := os.Args[1]
+	dirContents, err := filelist.FindHTMLFiles(rootPath)
+	if err != nil {
+		usage(fmt.Sprintf("%v\n", err), 1)
+	}
+	log.Printf("Files %v\n", dirContents)
+	//w := words.New()
+	for i, fname := range dirContents {
+		log.Printf("processing %d %s\n", i, fname)
+		data, err := ioutil.ReadFile(fname)
+		if err != nil {
+			log.Fatal(err)
+		}
+		startCut := 0
+		endCut := len(data) - 1
+		if bytes.Contains(bytes.ToLower(data), []byte("<body")) == true {
+			startCut = bytes.Index(bytes.ToLower(data), []byte("<body"))
+		}
+
+		src, err := words.StripTags(string(data[startCut:endCut]))
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Printf("DEBUG %s\n", src)
 	}
 }

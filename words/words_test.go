@@ -54,6 +54,14 @@ func TestStripTags(t *testing.T) {
 	if expectedText != plainText {
 		t.Errorf("[%s] != [%s]\n", expectedText, plainText)
 	}
+	expectedText = "<p>This is a test, but without the script element."
+	plainText, err = StripTags("<p>This is a test<script>console.log('Should not include');</script>, but without script element.")
+	if err != nil {
+		t.Error(err)
+	}
+	if expectedText != plainText {
+		t.Errorf("[%s] != [%s]\n", expectedText, plainText)
+	}
 }
 
 func TestsWordList(t *testing.T) {
