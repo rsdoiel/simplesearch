@@ -11,15 +11,6 @@ import (
 	"testing"
 )
 
-func indexOf(target string, words []string) int {
-	for i, s := range words {
-		if target == s {
-			return i
-		}
-	}
-	return -1
-}
-
 func TestWords(t *testing.T) {
 	w := new(Words)
 	if w == nil {
@@ -56,7 +47,17 @@ func TestsWordList(t *testing.T) {
 }
 
 func TestMergeWords(t *testing.T) {
-	t.Error("MergePathWordList() not implemented")
+	w := new(Words)
+	if err := w.MergeWords("test.html", []string{"This", "is", "a", "test"}); err != nil {
+		t.Errorf("MergeWords returned error %v\n", err)
+	}
+	if hasString("test.html", w.Files) == false {
+		t.Errorf("MergeWords() failed did not add words for test.html: %v\n", w)
+	}
+	if w.Words["This"] == nil {
+		t.Errorf("Word 'This' should be in w.Words: %v\n", w.Words)
+	}
+	t.Error("Need to implement check that w.Words[\"This\"] contains correct array of file indexes")
 }
 
 func TestToJSON(t *testing.T) {
