@@ -9,6 +9,7 @@ package words
  */
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"strings"
@@ -108,6 +109,14 @@ func (w *Words) MergeWords(pathname string, words []string) error {
 }
 
 // ToJSON - render the Words data structure a JSON
-func (w *Words) ToJSON() (string, error) {
-	return "", errors.New("ToJSON() not implemented")
+func (w *Words) ToJSON() (string, string, error) {
+	fileList, err := json.Marshal(w.Files)
+	if err != nil {
+		return "", "", err
+	}
+	wordList, err := json.Marshal(w.Words)
+	if err != nil {
+		return string(fileList[:]), "", err
+	}
+	return string(fileList[:]), string(wordList[:]), nil
 }

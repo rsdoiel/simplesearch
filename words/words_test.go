@@ -8,6 +8,7 @@
 package words
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -111,5 +112,21 @@ func TestMergeWords(t *testing.T) {
 }
 
 func TestToJSON(t *testing.T) {
-	t.Error("ToJSON() not implemented")
+	w := New()
+	if err := w.MergeWords("test-01.html", []string{"This", "iS", "a", "TEST"}); err != nil {
+		t.Errorf("MergeWords returned error %v\n", err)
+	}
+	if err := w.MergeWords("test-02.html", []string{"This", "is", "not", "a", "unique", "test"}); err != nil {
+		t.Errorf("MergeWords() returned error %v\n", err)
+	}
+	fileList, wordList, err := w.ToJSON()
+	if err != nil {
+		t.Errorf("ToJSON() failed: %v, %v\n", w, err)
+	}
+	if strings.Contains(fileList, "test-01.html") == false || strings.Contains(fileList, "test-02.html") == false {
+		t.Errorf("Missing filenames in list: %v -> %s\n", w.Files, fileList)
+	}
+	if strings.Contains(wordList, "\"this\":[0,1]") == false {
+		t.Errorf("Missing 'This' values in word list: %v -> %s\n", w.Words, wordList)
+	}
 }
