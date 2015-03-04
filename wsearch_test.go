@@ -6,13 +6,13 @@ import (
 	"testing"
 )
 
-func indexOf(target string, words []string) bool {
-	for _, s := range words {
+func indexOf(target string, words []string) int {
+	for i, s := range words {
 		if target == s {
-			return true
+			return i
 		}
 	}
-	return false
+	return -1
 }
 
 func TestWords(t *testing.T) {
@@ -44,7 +44,7 @@ func TestsWordList(t *testing.T) {
 		t.Errorf("len(w) %d does not equal len(expectedWords) %d\n", len(w), len(expectedWords))
 	}
 	for _, s := range expectedWords {
-		if indexOf(s, w) == false {
+		if indexOf(s, w) == -1 {
 			t.Error("Could not find %s in %v\n", s, w)
 		}
 	}
@@ -59,19 +59,19 @@ func TestToJSON(t *testing.T) {
 }
 
 func TestGetDirectoryListing(t *testing.T) {
-	expectedDirContents := []string{"../filelist", "../filelist/filelist.go", "../filelist/filelist_test.go"}
-	rootDir := "../filelist"
+	expectedDirContents := []string{"filelist", "filelist/filelist.go", "filelist/filelist_test.go"}
+	rootDir := "filelist"
 
 	dirContents, err := filelist.GetDirectoryListing(rootDir)
 	if err != nil {
-		t.Error("GetDirectoryListing() threw error: %v\n", err)
+		t.Error("GetDirectoryListing() returned an error: %v\n", err)
 	}
 	if len(dirContents) != len(expectedDirContents) {
 		t.Error("unexpected directory results: %v\n", dirContents)
 	}
 
 	for _, target := range expectedDirContents {
-		if indexOf(target, dirContents) == false {
+		if indexOf(target, dirContents) == -1 {
 			t.Error("Could not find %s in %v\n", target, dirContents)
 		}
 	}

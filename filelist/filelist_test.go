@@ -11,13 +11,13 @@ import (
 	"testing"
 )
 
-func indexOf(target string, arrayOfStrings []string) bool {
-	for _, str := range arrayOfStrings {
+func indexOf(target string, arrayOfStrings []string) int {
+	for i, str := range arrayOfStrings {
 		if target == str {
-			return true
+			return i
 		}
 	}
-	return false
+	return -1
 }
 
 func TestGetDirectoryListing(t *testing.T) {
@@ -26,19 +26,32 @@ func TestGetDirectoryListing(t *testing.T) {
 
 	dirContents, err := GetDirectoryListing(rootDir)
 	if err != nil {
-		t.Error("GetDirectoryListing() threw error: %v\n", err)
+		t.Error("GetDirectoryListing() returned an error: %v\n", err)
 	}
 	if len(dirContents) != len(expectedDirContents) {
 		t.Error("unexpected directory results: %v\n", dirContents)
 	}
 
 	for _, target := range expectedDirContents {
-		if indexOf(target, dirContents) == false {
+		if indexOf(target, dirContents) == -1 {
 			t.Error("Could not find %s in %v\n", target, dirContents)
 		}
 	}
 }
 
 func TestFindHTMLFiles(t *testing.T) {
-	t.Error("TestFindHTMLFiles() not implemented.")
+	rootDir := "../demo/site-01"
+	expectedDirContents := []string{"../demo/site-01/index.html", "../demo/site-01/persona-demo.html"}
+	dirContents, err := FindHTMLFiles(rootDir)
+	if err != nil {
+		t.Error("FindHTMLFiles() returned an error: %v\n", err)
+	}
+	if len(expectedDirContents) != len(dirContents) {
+		t.Error("Expected %d found %d files.\n", len(expectedDirContents), len(dirContents))
+	}
+	for _, target := range expectedDirContents {
+		if indexOf(target, dirContents) == -1 {
+			t.Error("Cound not find %s in %v\n", target, dirContents)
+		}
+	}
 }
