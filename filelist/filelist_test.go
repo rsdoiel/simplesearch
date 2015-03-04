@@ -1,8 +1,14 @@
+/**
+ * filelist_test.go - test the filelist.go library.
+ *
+ * @author R. S. Doiel, <rsdoiel@gmail.com>
+ * copyright (c) 2015 all rights reserved
+ * Released under the Simplified BSD License
+ */
 package filelist_test
 
 import (
 	"../filelist"
-	"fmt"
 	"testing"
 )
 
@@ -16,18 +22,14 @@ func indexOf(target string, arrayOfStrings []string) bool {
 }
 
 func TestGetDirectoryListing(t *testing.T) {
-	expectedDirContents := []string{
-		"../filelist",
-		"../filelist/filelist.go",
-		"../filelist/filelist_test.go",
-	}
+	expectedDirContents := []string{"../filelist", "../filelist/filelist.go", "../filelist/filelist_test.go"}
 	rootDir := "../filelist"
+
 	dirContents, err := filelist.GetDirectoryListing(rootDir)
 	if err != nil {
-		t.Error("GetDirectoryListing() threw err %v\n", err)
+		t.Error("GetDirectoryListing() threw error: %v\n", err)
 	}
-	fmt.Printf("DEBUG %v\n", dirContents)
-	if len(dirContents) != 3 {
+	if len(dirContents) != len(expectedDirContents) {
 		t.Error("unexpected directory results: %v\n", dirContents)
 	}
 
@@ -36,4 +38,8 @@ func TestGetDirectoryListing(t *testing.T) {
 			t.Error("Could not find %s in %v\n", target, dirContents)
 		}
 	}
+}
+
+func TestFindHTMLFiles(t *testing.T) {
+	t.Error("TestFindHTMLFiles() not implemented.")
 }

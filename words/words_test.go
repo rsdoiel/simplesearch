@@ -24,7 +24,7 @@ func indexOf(target string, words []string) bool {
 func TestWords(t *testing.T) {
 	w := new(words.Words)
 	if w == nil {
-		t.Error("Could not create words.Words element.")
+		t.Error("Could not create words.Words struct.")
 	}
 }
 
@@ -35,7 +35,7 @@ func TestStripTags(t *testing.T) {
 		t.Error(err)
 	}
 	if expectedText != plainText {
-		t.Error(expectedText + " != " + plainText)
+		t.Errorf("[%s] != [%s]\n", expectedText, plainText)
 	}
 }
 
@@ -44,14 +44,14 @@ func TestsWordList(t *testing.T) {
 
 	w, err := words.WordList("<body><header>This si a test</header><h1>A title</h1><p>and a paragraph</p></body>")
 	if err != nil {
-		t.Error(err)
+		t.Errorf("words.WordList() returned error %v\n", err)
 	}
 	if len(w) != len(expectedWords) {
-		t.Error("len(w) does not equal len(expectedWords)")
+		t.Errorf("len(w) %d does not equal len(expectedWords) %d\n", len(w), len(expectedWords))
 	}
 	for _, s := range expectedWords {
 		if indexOf(s, w) == false {
-			t.Error("Could not find " + s)
+			t.Error("Could not find %s in %v\n", s, w)
 		}
 	}
 }
