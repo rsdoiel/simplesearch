@@ -7,19 +7,39 @@
  */
 package words
 
+import (
+	"errors"
+)
+
 type Words struct {
 	Files []string
 	Words map[string][]int
 }
 
-func StripTags(html []byte) ([]byte, error) {
+func StripTags(html string) (string, error) {
+	var (
+		outSlice []byte
+		outError error
+	)
+
+	byteSlice := []byte(html)
 	inCData := false
-	return nil, errors.New("StripTags() not implemented")
+	for _, c := range byteSlice {
+		if c == '>' {
+			inCData = true
+		} else if c == '<' {
+			inCData = false
+		} else if inCData == true {
+			outSlice = append(outSlice, c)
+			if outSlice == nil {
+				outError = errors.New("Cannot append element to output string")
+			}
+		}
+	}
+	return string(outSlice[:]), outError
 }
 
-func WordList(src []byte) ([]string, error) {
-	var wordList []string
-
+func WordList(src string) ([]string, error) {
 	return nil, errors.New("WordList() not implemented")
 }
 
