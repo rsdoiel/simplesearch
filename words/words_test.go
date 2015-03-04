@@ -5,10 +5,9 @@
  * copyright (c) 2015 All rights reserved.
  * Released under the Simplified BSD License.
  */
-package words_test
+package words
 
 import (
-	"../words"
 	"testing"
 )
 
@@ -22,15 +21,15 @@ func indexOf(target string, words []string) bool {
 }
 
 func TestWords(t *testing.T) {
-	w := new(words.Words)
+	w := new(Words)
 	if w == nil {
-		t.Error("Could not create words.Words struct.")
+		t.Error("Could not create Words struct.")
 	}
 }
 
 func TestStripTags(t *testing.T) {
 	expectedText := "This is a paragraph"
-	plainText, err := words.StripTags("<p>This is a paragraph</p>")
+	plainText, err := StripTags("<p>This is a paragraph</p>")
 	if err != nil {
 		t.Error(err)
 	}
@@ -42,9 +41,9 @@ func TestStripTags(t *testing.T) {
 func TestsWordList(t *testing.T) {
 	expectedWords := []string{"This", "si", "a", "test", "A", "title", "and", "paragraph"}
 
-	w, err := words.WordList("<body><header>This si a test</header><h1>A title</h1><p>and a paragraph</p></body>")
+	w, err := WordList("<body><header>This si a test</header><h1>A title</h1><p>and a paragraph</p></body>")
 	if err != nil {
-		t.Errorf("words.WordList() returned error %v\n", err)
+		t.Errorf("WordList() returned error %v\n", err)
 	}
 	if len(w) != len(expectedWords) {
 		t.Errorf("len(w) %d does not equal len(expectedWords) %d\n", len(w), len(expectedWords))

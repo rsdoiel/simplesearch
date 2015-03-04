@@ -5,10 +5,9 @@
  * copyright (c) 2015 all rights reserved
  * Released under the Simplified BSD License
  */
-package filelist_test
+package filelist
 
 import (
-	"../filelist"
 	"testing"
 )
 
@@ -25,7 +24,7 @@ func TestGetDirectoryListing(t *testing.T) {
 	expectedDirContents := []string{"../filelist", "../filelist/filelist.go", "../filelist/filelist_test.go"}
 	rootDir := "../filelist"
 
-	dirContents, err := filelist.GetDirectoryListing(rootDir)
+	dirContents, err := GetDirectoryListing(rootDir)
 	if err != nil {
 		t.Error("GetDirectoryListing() threw error: %v\n", err)
 	}
