@@ -1,3 +1,5 @@
+package filelist
+
 /**
  * filelist.go - Scan a path an return qa list of files found.
  *
@@ -5,7 +7,6 @@
  * copyright (c) 2015 All rights reserved.
  * Released under the Simplified BSD License.
  */
-package filelist
 
 import (
 	"os"
@@ -14,6 +15,7 @@ import (
 	"strings"
 )
 
+// GetDirectoryListing from an initial path
 func GetDirectoryListing(pathname string) ([]string, error) {
 	var dirContents []string
 
@@ -31,6 +33,7 @@ func GetDirectoryListing(pathname string) ([]string, error) {
 	return dirContents, err
 }
 
+// FindHTMLFiles from an initial path
 func FindHTMLFiles(pathname string) ([]string, error) {
 	var dirContents []string
 
