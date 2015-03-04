@@ -11,15 +11,20 @@ package words
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
-
-// A slice of ints containing pos indexes from another array or slice.
-type IndexList []int
 
 // Words contains the data structures for building a file list and inverted word index.
 type Words struct {
 	Files []string
-	Words map[string]IndexList
+	Words map[string][]int
+}
+
+// New - initialize a new Words structure.
+func New() *Words {
+	w := new(Words)
+	w.Words = make(map[string][]int, 100)
+	return w
 }
 
 // StripTags removes HTML markup returning only CData
@@ -71,24 +76,31 @@ func hasString(target string, l []string) bool {
 
 // MergeWords - given a path and list of words update the Words datastructure
 func (w *Words) MergeWords(pathname string, words []string) error {
+	var (
+		key string
+		i   int
+	)
 	// Only add unique pathname
-	if i := indexOf(pathname, w.Files); i == -1 {
+	if i = indexOf(pathname, w.Files); i == -1 {
 		w.Files = append(w.Files, pathname)
 	}
 	// Confirm position of pathname in the list
-	i := indexOf(pathname, w.Files)
+	i = indexOf(pathname, w.Files)
 	if i == -1 {
 		return errors.New(fmt.Sprintf("Could not update Words for %s", pathname))
 	}
 	for _, word := range words {
 		// Create a slot for the map if needed.
-		if w.Words[word] == nil {
-			w.Words[word] = make(IndexList)
+		key = strings.ToLower(word)
+		if w.Words[key] == nil {
+			w.Words[key] = make([]int, 1)
+			w.Words[key][0] = i
+		} else {
+			// Append index to word list
+			w.Words[key] = append(w.Words[key], i)
 		}
-		// Append index to word list
-		w.Words[word] = append(w.Words[word], i)
 		// Confirm we still have our file index list for word.
-		if w.Words[word] == nil {
+		if w.Words[key] == nil {
 			return errors.New(fmt.Sprintf("Could not add %s to words %v", word, w.Words))
 		}
 	}
