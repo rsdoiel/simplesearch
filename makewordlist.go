@@ -1,5 +1,5 @@
 /**
- * simplesearch.go - scan a static website and generate a files and inverted word
+ * makewordlist.go - scan a static website and generate a files and inverted word
  * list in JSON.
  *
  * @author R. S. Doiel, <rsdoiel@usc.edu>
@@ -67,8 +67,6 @@ func main() {
 		}
 		src := words.Flatten(data)
 		wordList := words.WordList(src)
-		log.Printf("DEBUG found words: %s\n", wordList)
-
 		if w.MergeWords(fname, wordList) == false {
 			log.Fatal(fmt.Sprintf("Could not add words for %s <-- %s\n", fname, wordList))
 		}

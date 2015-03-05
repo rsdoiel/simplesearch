@@ -17,9 +17,22 @@ I have written a tool, _makewordlist_, that will generate two JSON files, files.
 a provided path (e.g. /my/htdocs). You can then read these two files in PHP and find which files contain
 the words you are searching for.
 
+Commands to run--
+
 ```shell
-    makewordlist ./test-data
-    php demo-simplesearch.php Mozilla Hello "You're" Fred
+    go build makewordlist.go
+    ./makewordlist test-data
+    php demo-simplesearch.php otto javascript persona fred Jane
 ```
+
+This PHP search demo should return something like--
+
+```
+    These are the pages that have some of the words (i.e. otto, javascript, persona):
+    Page: test-data/index.html
+    Page: test-data/index.html
+    Page: test-data/persona-demo.html
+```
+
 
 

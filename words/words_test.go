@@ -9,7 +9,6 @@ package words
 
 import (
 	"bytes"
-	"fmt"
 	"strings"
 	"testing"
 )
