@@ -11,14 +11,13 @@ package words
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"golang.org/x/net/html"
 	"io"
 	"strings"
 )
 
-const delimitingCharacters = " .~!@#$%^&*()_+`-={}[];':\"<>?,./\n"
+const delimitingCharacters = " .~!@#$%^&*()_+`-={}[];':\"<>?,./\t\r\n"
 
 // Words contains the data structures for building a file list and inverted word index.
 type Words struct {
@@ -35,13 +34,12 @@ func New() *Words {
 
 // StripTags removes HTML markup returning only CData
 // consider replacing this with something based on golang.org/x/net/html parser.
-func StripTags(src string) (string, error) {
+func StripTags(srcBytes []byte) []byte {
 	var (
 		outSlice [][]byte
-		outError error
 	)
 
-	z := html.NewTokenizer(strings.NewReader(src))
+	z := html.NewTokenizer(bytes.NewReader(srcBytes))
 	depth := 0
 	inCData := true
 	moreHTML := true
@@ -54,9 +52,6 @@ func StripTags(src string) (string, error) {
 		case html.ErrorToken:
 			if z.Err() == io.EOF {
 				moreHTML = false
-			} else {
-
-				fmt.Printf("ERROR parsing HTML: %v\n", z.Err())
 			}
 		case html.TextToken:
 			if depth > 0 && inCData == true {
@@ -77,38 +72,45 @@ func StripTags(src string) (string, error) {
 		}
 	}
 
-	return string(bytes.Join(outSlice, []byte(""))), outError
+	return bytes.Join(outSlice, []byte(""))
 }
 
 // WordList scans HTML source and returns a list of words found.
-func WordList(htmlSource string) ([]string, error) {
+func WordList(srcBytes []byte) [][]byte {
 	var (
-		tmp     string
-		outList []string
+		tmp     []byte
+		outList [][]byte
 	)
-	src, err := StripTags(htmlSource)
-	if err != nil {
-		return nil, err
-	}
 	fmt.Printf("DEBUG delimiting chacacters: [%s]\n", delimitingCharacters)
-	fmt.Printf("DEBUG before split: [%s]\n", src)
-	words := strings.Split(src, delimitingCharacters)
-	fmt.Printf("DEBUG words: %v\n", words)
+	fmt.Printf("DEBUG before split: [%s]\n", srcBytes)
+	l := bytes.Split(srcBytes, []byte(delimitingCharacters))
+	fmt.Printf("DEBUG words: %s\n", l)
 	// Trim leading/trailing puncuation and spaces.
-	for _, item := range words {
+	for _, item := range l {
 		fmt.Printf("DEBUG  item: [%s]\n", item)
-		tmp = strings.Trim(item, delimitingCharacters)
+		tmp = bytes.Trim(item, delimitingCharacters)
 		fmt.Printf("DEBUG   tmp: [%s]\n", tmp)
-		if tmp != "" {
-			outList = append(outList, tmp)
+		if tmp != nil {
+			outList = append(outList, tmp[:])
 		}
 	}
-	return outList, nil
+	fmt.Printf("DEBUG outList: %s\n", outList)
+	return outList
 }
 
-func indexOf(l []string, target string) int {
+func indexOfString(l []string, target string) int {
 	for i, s := range l {
 		if target == s {
+			return i
+		}
+	}
+	return -1
+}
+
+func indexOf(l [][]byte, target string) int {
+	t := []byte(target)
+	for i, s := range l {
+		if bytes.Equal(t, s) == true {
 			return i
 		}
 	}
@@ -134,23 +136,23 @@ func containsInt(l []int, i int) bool {
 }
 
 // MergeWords - given a path and list of words update the Words datastructure
-func (w *Words) MergeWords(pathname string, words []string) error {
+func (w *Words) MergeWords(pathname string, words [][]byte) bool {
 	var (
 		key string
 		i   int
 	)
 	// Only add unique pathname
-	if i = indexOf(w.Files, pathname); i == -1 {
+	if i = indexOfString(w.Files, pathname); i == -1 {
 		w.Files = append(w.Files, pathname)
 	}
 	// Confirm position of pathname in the list
-	i = indexOf(w.Files, pathname)
+	i = indexOfString(w.Files, pathname)
 	if i == -1 {
-		return errors.New(fmt.Sprintf("Could not update Words for %s", pathname))
+		return false
 	}
 	for _, word := range words {
 		// Create a slot for the map if needed.
-		if key = strings.Trim(strings.ToLower(word), delimitingCharacters); key != "" {
+		if key = strings.Trim(strings.ToLower(string(word[:])), delimitingCharacters); key != "" {
 			if w.Words[key] == nil {
 				w.Words[key] = make([]int, 1)
 				w.Words[key][0] = i
@@ -160,11 +162,11 @@ func (w *Words) MergeWords(pathname string, words []string) error {
 			}
 			// Confirm we still have our file index list for word.
 			if w.Words[key] == nil {
-				return errors.New(fmt.Sprintf("Could not add %s to words %v", word, w.Words))
+				return false
 			}
 		}
 	}
-	return nil
+	return true
 }
 
 // ToJSON - render the Words data structure a JSON

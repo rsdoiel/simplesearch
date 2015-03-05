@@ -8,6 +8,7 @@
 package words
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 )
@@ -46,49 +47,43 @@ func TestWords(t *testing.T) {
 }
 
 func TestStripTags(t *testing.T) {
-	expectedText := "This is a paragraph"
-	plainText, err := StripTags("<p>This is a paragraph</p>")
-	if err != nil {
-		t.Error(err)
+	expectedText := []byte("This is a paragraph")
+	plainText := StripTags([]byte("<p>This is a paragraph</p>"))
+	if bytes.Equal(expectedText, plainText) != true {
+		t.Errorf("[%v] != [%v]\n", expectedText, plainText)
 	}
-	if expectedText != plainText {
-		t.Errorf("[%s] != [%s]\n", expectedText, plainText)
-	}
-	expectedText = "This is a test, but without the script element."
-	plainText, err = StripTags("<body><p>This is a test<script>console.log('Should not include');</script>, but without the script element.</body>")
-	if err != nil {
-		t.Error(err)
-	}
-	if len(expectedText) != len(strings.Trim(plainText, " ")) {
+	expectedText = []byte("This is a test, but without the script element.")
+	plainText = StripTags([]byte("<body><p>This is a test<script>console.log('Should not include');</script>, but without the script element.</body>"))
+	if len(expectedText) != len(plainText) {
 		t.Errorf("different lengths %d <> %d\n", len(expectedText), len(plainText))
-		t.Errorf("different lengths [%s] <> [%s]\n", expectedText, plainText)
 	}
-	if strings.Contains(expectedText, strings.Trim(plainText, " ")) == false {
-		t.Errorf("[%s] != [%s]\n", expectedText, plainText)
+	if bytes.Equal(expectedText, plainText) == false {
+		t.Errorf("[%v] != [%v]\n", expectedText, plainText)
 	}
 }
 
 func TestsWordList(t *testing.T) {
-	expectedWords := []string{"This", "si", "a", "test", "A", "title", "and", "paragraph"}
-
-	w, err := WordList("<body><header>This si a test</header><h1>A title</h1><p>and a paragraph</p></body>")
-	if err != nil {
-		t.Errorf("WordList() returned error %v\n", err)
+	src := []byte("<body><header>This si a test</header><h1>A title</h1><p>and a paragraph</p></body>")
+	expectedWords := [][]byte{[]byte("This"), []byte("si"), []byte("a"), []byte("test"), []byte("A"), []byte("title"), []byte("and"), []byte("paragraph")}
+	s := StripTags(src)
+	w := WordList(s)
+	if w == nil {
+		t.Errorf("WordList() returned empty list")
 	}
 	if len(w) != len(expectedWords) {
 		t.Errorf("len(w) %d does not equal len(expectedWords) %d\n", len(w), len(expectedWords))
 	}
-	for _, s := range expectedWords {
-		if indexOf(w, s) == -1 {
-			t.Error("Could not find %s in %v\n", s, w)
+	for _, item := range expectedWords {
+		if indexOf(w, string(item[:])) == -1 {
+			t.Error("Could not find %v in %v\n", item, w)
 		}
 	}
 }
 
 func TestMergeWords(t *testing.T) {
 	w := New()
-	if err := w.MergeWords("test-01.html", []string{"This", "iS", "a", "TEST"}); err != nil {
-		t.Errorf("MergeWords returned error %v\n", err)
+	if w.MergeWords("test-01.html", []string{"This", "iS", "a", "TEST"}) == false {
+		t.Errorf("MergeWords returned false %v\n", w)
 	}
 	if len(w.Files) != 1 {
 		t.Errorf("Should have a single file in .Files: %v\n", w)
@@ -109,8 +104,8 @@ func TestMergeWords(t *testing.T) {
 		t.Errorf("Word 'test' should be in w.Words: %v\n", w.Words)
 	}
 
-	if err := w.MergeWords("test-02.html", []string{"This", "is", "not", "a", "unique", "test"}); err != nil {
-		t.Errorf("MergeWords() returned error %v\n", err)
+	if w.MergeWords("test-02.html", []string{"This", "is", "not", "a", "unique", "test"}) == false {
+		t.Errorf("MergeWords() returned false %v\n", w)
 	}
 	if len(w.Files) != 2 {
 		t.Errorf("Should have two files in struct: %v\n", w)
@@ -122,8 +117,8 @@ func TestMergeWords(t *testing.T) {
 		t.Errorf("Should have one entry for 'not' %v\n", w.Words)
 	}
 
-	if err := w.MergeWords("test-03.html", []string{"THIS", "SPACE", "", "?", "!", "A", "\n\r"}); err != nil {
-		t.Errorf("MergeWords() returned error %v\n", err)
+	if w.MergeWords("test-03.html", []string{"THIS", "SPACE", "", "?", "!", "A", "\n\r"}) == false {
+		t.Errorf("MergeWords() returned false %v\n", w)
 	}
 	if w.Words[""] != nil {
 		t.Errorf("MergeWords() is storing empty string: %v\n", w)
@@ -142,11 +137,11 @@ func TestMergeWords(t *testing.T) {
 
 func TestToJSON(t *testing.T) {
 	w := New()
-	if err := w.MergeWords("test-01.html", []string{"This", "iS", "a", "TEST"}); err != nil {
-		t.Errorf("MergeWords returned error %v\n", err)
+	if w.MergeWords("test-01.html", []string{"This", "iS", "a", "TEST"}) == false {
+		t.Errorf("MergeWords returned error %v\n", w)
 	}
-	if err := w.MergeWords("test-02.html", []string{"This", "is", "not", "a", "unique", "test"}); err != nil {
-		t.Errorf("MergeWords() returned error %v\n", err)
+	if w.MergeWords("test-02.html", []string{"This", "is", "not", "a", "unique", "test"}) == false {
+		t.Errorf("MergeWords() returned error %v\n", w)
 	}
 	fileList, wordList, err := w.ToJSON()
 	if err != nil {

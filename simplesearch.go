@@ -65,12 +65,12 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		wordList, err := words.WordList(string(data[:]))
-		if err != nil {
-			log.Fatal(err)
-		}
-		if err := w.MergeWords(fname, wordList); err != nil {
-			log.Fatal(fmt.Sprintf("Could not add words for %s <-- %v\n%v", fname, wordList, err))
+		src := words.StripTags(data[:])
+		wordList := words.WordList(src)
+		log.Printf("DEBUG found words: %s\n", wordList)
+
+		if w.MergeWords(fname, wordList) == false {
+			log.Fatal(fmt.Sprintf("Could not add words for %s <-- %v\n", fname, wordList))
 		}
 
 	}
