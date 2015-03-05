@@ -1,7 +1,7 @@
 
 # simplesearch
 
-Poof of concept command line tool to generate file an inverted word lists useful for naive search implementations.
+Poof of concept command line tool to generate file an inverted word list useful for naive search implementations.
 
 ## Basic idea
 
