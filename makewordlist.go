@@ -2,7 +2,7 @@
  * makewordlist.go - scan a static website and generate a files and inverted word
  * list in JSON.
  *
- * @author R. S. Doiel, <rsdoiel@usc.edu>
+ * @author R. S. Doiel, <rsdoiel@gmail.com>
  * copyright (c) 2015 All rights reserved.
  * Released under the Simplified BSD License.
  */
