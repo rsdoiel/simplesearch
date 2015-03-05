@@ -156,7 +156,7 @@ func TestToJSON(t *testing.T) {
 }
 
 func TestMoreCompletedHTMLProcessing(t *testing.T) {
-	page_source := []byte(`
+	pageSource := []byte(`
 <!DOCTYPE html>
     <html>
     <head>
@@ -234,9 +234,9 @@ func TestMoreCompletedHTMLProcessing(t *testing.T) {
     </body>
 </html>`)
 
-	expected_source := []byte("Sign in Signout Persona Demo Uses ws ottoengine Authenticated with Mozilla's Persona and via ottoengine")
+	expectedSource := []byte("Sign in Signout Persona Demo Uses ws ottoengine Authenticated with Mozilla's Persona and via ottoengine")
 
-	if text := Flatten(page_source); bytes.Equal(expected_source, text) == false {
+	if text := Flatten(pageSource); bytes.Equal(expectedSource, text) == false {
 		t.Errorf("Flatten() failed: %s\n", text)
 	}
 }
