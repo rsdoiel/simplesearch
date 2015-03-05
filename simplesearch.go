@@ -11,7 +11,6 @@ package main
 import (
 	"./filelist"
 	"./words"
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -66,21 +65,11 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		startCut := 0
-		endCut := len(data) - 1
-		if bytes.Contains(bytes.ToLower(data), []byte("<body")) == true {
-			startCut = bytes.Index(bytes.ToLower(data), []byte("<body"))
-		}
-
-		src, err := words.StripTags(string(data[startCut:endCut]))
+		wordList, err := words.WordList(string(data[:]))
 		if err != nil {
 			log.Fatal(err)
 		}
-		wordList, err := words.WordList(src)
-		if err != nil {
-			log.Fatal(err)
-		}
-		if w.MergeWords(fname, wordList) != nil {
+		if err := w.MergeWords(fname, wordList); err != nil {
 			log.Fatal(fmt.Sprintf("Could not add words for %s <-- %v\n%v", fname, wordList, err))
 		}
 

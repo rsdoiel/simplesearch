@@ -54,12 +54,16 @@ func TestStripTags(t *testing.T) {
 	if expectedText != plainText {
 		t.Errorf("[%s] != [%s]\n", expectedText, plainText)
 	}
-	expectedText = "<p>This is a test, but without the script element."
-	plainText, err = StripTags("<p>This is a test<script>console.log('Should not include');</script>, but without script element.")
+	expectedText = "This is a test, but without the script element."
+	plainText, err = StripTags("<body><p>This is a test<script>console.log('Should not include');</script>, but without the script element.</body>")
 	if err != nil {
 		t.Error(err)
 	}
-	if expectedText != plainText {
+	if len(expectedText) != len(strings.Trim(plainText, " ")) {
+		t.Errorf("different lengths %d <> %d\n", len(expectedText), len(plainText))
+		t.Errorf("different lengths [%s] <> [%s]\n", expectedText, plainText)
+	}
+	if strings.Contains(expectedText, strings.Trim(plainText, " ")) == false {
 		t.Errorf("[%s] != [%s]\n", expectedText, plainText)
 	}
 }
@@ -75,7 +79,7 @@ func TestsWordList(t *testing.T) {
 		t.Errorf("len(w) %d does not equal len(expectedWords) %d\n", len(w), len(expectedWords))
 	}
 	for _, s := range expectedWords {
-		if indexOf(s, w) == -1 {
+		if indexOf(w, s) == -1 {
 			t.Error("Could not find %s in %v\n", s, w)
 		}
 	}
@@ -89,7 +93,7 @@ func TestMergeWords(t *testing.T) {
 	if len(w.Files) != 1 {
 		t.Errorf("Should have a single file in .Files: %v\n", w)
 	}
-	if hasString("test-01.html", w.Files) == false {
+	if containsString(w.Files, "test-01.html") == false {
 		t.Errorf("MergeWords() failed did not add words for test.html: %v\n", w)
 	}
 	if w.Words["this"] == nil && w.Words["this"][0] == 0 {
@@ -117,6 +121,23 @@ func TestMergeWords(t *testing.T) {
 	if len(w.Words["not"]) != 1 {
 		t.Errorf("Should have one entry for 'not' %v\n", w.Words)
 	}
+
+	if err := w.MergeWords("test-03.html", []string{"THIS", "SPACE", "", "?", "!", "A", "\n\r"}); err != nil {
+		t.Errorf("MergeWords() returned error %v\n", err)
+	}
+	if w.Words[""] != nil {
+		t.Errorf("MergeWords() is storing empty string: %v\n", w)
+	}
+	if w.Words["?"] != nil {
+		t.Errorf("MergeWords() is storing question mark: %v\n", w)
+	}
+	if w.Words["!"] != nil {
+		t.Errorf("MergeWords() is storing bang: %v\n", w)
+	}
+	if w.Words["\n\r"] != nil {
+		t.Errorf("MergeWords() is storing line feed/carriage return: %v\n", w)
+	}
+
 }
 
 func TestToJSON(t *testing.T) {
