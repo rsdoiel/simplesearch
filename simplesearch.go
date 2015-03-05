@@ -1,6 +1,6 @@
 /**
- * wsearch.go - convert static website into a JSON list of files
- * and JSON inverted word list.
+ * simplesearch.go - scan a static website and generate a files and inverted word
+ * list in JSON.
  *
  * @author R. S. Doiel, <rsdoiel@usc.edu>
  * copyright (c) 2015 All rights reserved.
@@ -59,7 +59,7 @@ func main() {
 		usage(fmt.Sprintf("%v\n", err), 1)
 	}
 	log.Printf("Files %v\n", dirContents)
-	//w := words.New()
+	w := words.New()
 	for i, fname := range dirContents {
 		log.Printf("processing %d %s\n", i, fname)
 		data, err := ioutil.ReadFile(fname)
@@ -76,6 +76,20 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		log.Printf("DEBUG %s\n", src)
+		wordList, err := words.WordList(src)
+		if err != nil {
+			log.Fatal(err)
+		}
+		if w.MergeWords(fname, wordList) != nil {
+			log.Fatal(fmt.Sprintf("Could not add words for %s <-- %v\n%v", fname, wordList, err))
+		}
+
 	}
+	log.Printf("DEBUG %v\n", w)
+	fileList, invertedWordList, err := w.ToJSON()
+	if err != nil {
+		log.Fatal(err)
+	}
+	ioutil.WriteFile("files.json", []byte(fileList), 0664)
+	ioutil.WriteFile("inverted-wordlist.json", []byte(invertedWordList), 0664)
 }

@@ -29,13 +29,14 @@ func New() *Words {
 }
 
 // StripTags removes HTML markup returning only CData
+// consider replacing this with something based on golang.org/x/net/html parser.
 func StripTags(html string) (string, error) {
 	var (
 		outSlice []byte
 		outError error
 	)
 
-	byteSlice := []byte(html)
+	byteSlice := []byte(strings.ToLower(html))
 	inCData := false
 	for _, c := range byteSlice {
 		if c == '>' {
@@ -54,7 +55,15 @@ func StripTags(html string) (string, error) {
 
 // WordList scans HTML source and returns a list of words found.
 func WordList(src string) ([]string, error) {
-	return nil, errors.New("WordList() not implemented")
+	words := strings.Split(strings.ToLower(src), " ")
+	if len(words) == 0 {
+		return nil, errors.New("No words found.")
+	}
+	// Trim leading/trailing puncuation and spaces.
+	for i, item := range words {
+		words[i] = strings.Trim(item, " .~!@#$%^&*()_+`-={}[];':\"<>?,./\n\r")
+	}
+	return words, nil
 }
 
 func indexOf(target string, l []string) int {
