@@ -29,11 +29,11 @@ const usageText = `
 
 `
 
-func usage(msg string, error_code int) {
+func usage(msg string, errorCode int) {
 	prog := filepath.Base(os.Args[0])
 	fmt.Printf(usageText, prog, prog)
 	fmt.Println(msg)
-	os.Exit(error_code)
+	os.Exit(errorCode)
 }
 
 func containsString(l []string, target string) bool {
