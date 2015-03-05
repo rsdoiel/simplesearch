@@ -65,16 +65,15 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		src := words.StripTags(data[:])
+		src := words.Flatten(data)
 		wordList := words.WordList(src)
 		log.Printf("DEBUG found words: %s\n", wordList)
 
 		if w.MergeWords(fname, wordList) == false {
-			log.Fatal(fmt.Sprintf("Could not add words for %s <-- %v\n", fname, wordList))
+			log.Fatal(fmt.Sprintf("Could not add words for %s <-- %s\n", fname, wordList))
 		}
 
 	}
-	log.Printf("DEBUG %v\n", w)
 	fileList, invertedWordList, err := w.ToJSON()
 	if err != nil {
 		log.Fatal(err)

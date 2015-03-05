@@ -11,13 +11,16 @@ package words
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"golang.org/x/net/html"
 	"io"
+	"regexp"
 	"strings"
 )
 
-const delimitingCharacters = " .~!@#$%^&*()_+`-={}[];':\"<>?,./\t\r\n"
+const (
+	delimitingCharacters = " ~!@#$%^&*()_+`-={}[];':\"<>?,./|\t\r\n"
+	collapsingCharacters = "( |,|!|-|\t|\r|\n)+"
+)
 
 // Words contains the data structures for building a file list and inverted word index.
 type Words struct {
@@ -32,9 +35,8 @@ func New() *Words {
 	return w
 }
 
-// StripTags removes HTML markup returning only CData
-// consider replacing this with something based on golang.org/x/net/html parser.
-func StripTags(srcBytes []byte) []byte {
+// Flatten removes HTML markup returning only CData as a space delimited list of words.
+func Flatten(srcBytes []byte) []byte {
 	var (
 		outSlice [][]byte
 	)
@@ -46,18 +48,18 @@ func StripTags(srcBytes []byte) []byte {
 	cData := []byte("")
 	for moreHTML == true {
 		tt := z.Next()
-		cData = z.Text()
-		tn, _ := z.TagName()
 		switch tt {
 		case html.ErrorToken:
 			if z.Err() == io.EOF {
 				moreHTML = false
 			}
 		case html.TextToken:
+			cData = z.Text()
 			if depth > 0 && inCData == true {
 				outSlice = append(outSlice, cData)
 			}
 		case html.StartTagToken, html.EndTagToken:
+			tn, _ := z.TagName()
 			if tt == html.StartTagToken {
 				if bytes.Equal(tn, []byte("script")) == true || bytes.Equal(tn, []byte("head")) == true {
 					inCData = false
@@ -71,31 +73,13 @@ func StripTags(srcBytes []byte) []byte {
 			}
 		}
 	}
-
-	return bytes.Join(outSlice, []byte(""))
+	re := regexp.MustCompile(collapsingCharacters)
+	return bytes.Trim(re.ReplaceAll(bytes.Join(outSlice, []byte("")), []byte(" ")), delimitingCharacters)
 }
 
 // WordList scans HTML source and returns a list of words found.
 func WordList(srcBytes []byte) [][]byte {
-	var (
-		tmp     []byte
-		outList [][]byte
-	)
-	fmt.Printf("DEBUG delimiting chacacters: [%s]\n", delimitingCharacters)
-	fmt.Printf("DEBUG before split: [%s]\n", srcBytes)
-	l := bytes.Split(srcBytes, []byte(delimitingCharacters))
-	fmt.Printf("DEBUG words: %s\n", l)
-	// Trim leading/trailing puncuation and spaces.
-	for _, item := range l {
-		fmt.Printf("DEBUG  item: [%s]\n", item)
-		tmp = bytes.Trim(item, delimitingCharacters)
-		fmt.Printf("DEBUG   tmp: [%s]\n", tmp)
-		if tmp != nil {
-			outList = append(outList, tmp[:])
-		}
-	}
-	fmt.Printf("DEBUG outList: %s\n", outList)
-	return outList
+	return bytes.Split(srcBytes, []byte(" "))
 }
 
 func indexOfString(l []string, target string) int {

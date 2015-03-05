@@ -9,6 +9,7 @@ package words
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -46,26 +47,26 @@ func TestWords(t *testing.T) {
 	}
 }
 
-func TestStripTags(t *testing.T) {
+func TestFlatten(t *testing.T) {
 	expectedText := []byte("This is a paragraph")
-	plainText := StripTags([]byte("<p>This is a paragraph</p>"))
+	plainText := Flatten([]byte("<p>This is a paragraph</p>"))
 	if bytes.Equal(expectedText, plainText) != true {
-		t.Errorf("[%v] != [%v]\n", expectedText, plainText)
+		t.Errorf("[%s] != [%s]\n", expectedText, plainText)
 	}
-	expectedText = []byte("This is a test, but without the script element.")
-	plainText = StripTags([]byte("<body><p>This is a test<script>console.log('Should not include');</script>, but without the script element.</body>"))
+	expectedText = []byte("This is a test but without the script element")
+	plainText = Flatten([]byte("<body><p>This is a test<script>console.log('Should not include');</script>, but without the script element.</body>"))
 	if len(expectedText) != len(plainText) {
 		t.Errorf("different lengths %d <> %d\n", len(expectedText), len(plainText))
 	}
 	if bytes.Equal(expectedText, plainText) == false {
-		t.Errorf("[%v] != [%v]\n", expectedText, plainText)
+		t.Errorf("[%s] != [%s]\n", expectedText, plainText)
 	}
 }
 
 func TestsWordList(t *testing.T) {
 	src := []byte("<body><header>This si a test</header><h1>A title</h1><p>and a paragraph</p></body>")
 	expectedWords := [][]byte{[]byte("This"), []byte("si"), []byte("a"), []byte("test"), []byte("A"), []byte("title"), []byte("and"), []byte("paragraph")}
-	s := StripTags(src)
+	s := Flatten(src)
 	w := WordList(s)
 	if w == nil {
 		t.Errorf("WordList() returned empty list")
@@ -82,7 +83,7 @@ func TestsWordList(t *testing.T) {
 
 func TestMergeWords(t *testing.T) {
 	w := New()
-	if w.MergeWords("test-01.html", []string{"This", "iS", "a", "TEST"}) == false {
+	if w.MergeWords("test-01.html", [][]byte{[]byte("This"), []byte("iS"), []byte("a"), []byte("TEST")}) == false {
 		t.Errorf("MergeWords returned false %v\n", w)
 	}
 	if len(w.Files) != 1 {
@@ -104,7 +105,7 @@ func TestMergeWords(t *testing.T) {
 		t.Errorf("Word 'test' should be in w.Words: %v\n", w.Words)
 	}
 
-	if w.MergeWords("test-02.html", []string{"This", "is", "not", "a", "unique", "test"}) == false {
+	if w.MergeWords("test-02.html", [][]byte{[]byte("This"), []byte("is"), []byte("not"), []byte("a"), []byte("unique"), []byte("test")}) == false {
 		t.Errorf("MergeWords() returned false %v\n", w)
 	}
 	if len(w.Files) != 2 {
@@ -117,7 +118,7 @@ func TestMergeWords(t *testing.T) {
 		t.Errorf("Should have one entry for 'not' %v\n", w.Words)
 	}
 
-	if w.MergeWords("test-03.html", []string{"THIS", "SPACE", "", "?", "!", "A", "\n\r"}) == false {
+	if w.MergeWords("test-03.html", [][]byte{[]byte("THIS"), []byte("SPACE"), []byte(""), []byte("?"), []byte("!"), []byte("A"), []byte("\n\r")}) == false {
 		t.Errorf("MergeWords() returned false %v\n", w)
 	}
 	if w.Words[""] != nil {
@@ -137,10 +138,10 @@ func TestMergeWords(t *testing.T) {
 
 func TestToJSON(t *testing.T) {
 	w := New()
-	if w.MergeWords("test-01.html", []string{"This", "iS", "a", "TEST"}) == false {
+	if w.MergeWords("test-01.html", [][]byte{[]byte("This"), []byte("iS"), []byte("a"), []byte("TEST")}) == false {
 		t.Errorf("MergeWords returned error %v\n", w)
 	}
-	if w.MergeWords("test-02.html", []string{"This", "is", "not", "a", "unique", "test"}) == false {
+	if w.MergeWords("test-02.html", [][]byte{[]byte("This"), []byte("is"), []byte("not"), []byte("a"), []byte("unique"), []byte("test")}) == false {
 		t.Errorf("MergeWords() returned error %v\n", w)
 	}
 	fileList, wordList, err := w.ToJSON()
@@ -152,5 +153,100 @@ func TestToJSON(t *testing.T) {
 	}
 	if strings.Contains(wordList, "\"this\":[0,1]") == false {
 		t.Errorf("Missing 'This' values in word list: %v -> %s\n", w.Words, wordList)
+	}
+}
+
+func TestMoreCompletedHTMLProcessing(t *testing.T) {
+	page_source := []byte(`
+<!DOCTYPE html>
+    <html>
+    <head>
+        <title>Persona demo using the ottoengine</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+        <script src="https://login.persona.org/include.js"></script>
+    </head>
+    <body>
+    <header><button id="signin">Sign in</button> <button id="signout">Signout</button></header>
+        <h1>Persona Demo</h1>
+        <caption>Uses <em>ws</em> ottoengine</caption>
+        <p>Authenticated with Mozilla's Persona and via ottoengine</p>
+
+<script>
+(function (){
+    "use strict";
+    var signinLink = document.getElementById('signin'),
+        signoutLink = document.getElementById('signout');
+
+    if (signinLink) {
+        signinLink.onclick = function() { navigator.id.request(); };
+    }
+    if (signoutLink) {
+        signoutLink.onclick = function() { navigator.id.logout(); };
+    }
+
+    function simpleXhrSentinel(xhr) {
+        return function() {
+            if (xhr.readyState == 4) {
+                if (xhr.status == 200){
+                    // reload page to reflect new login state
+                    window.location.reload();
+                } else {
+                    navigator.id.logout();
+                    alert("XMLHttpRequest error: " + xhr.status); 
+                } 
+            } 
+        } 
+    }
+
+    function verifyAssertion(assertion) {
+        // Your backend must return HTTP status code 200 to indicate successful
+        // verification of user's email address and it must arrange for the binding
+        // of currentUser to said address when the page is reloaded
+        var xhr = new XMLHttpRequest();
+
+        xhr.open("POST", "/persona", true);
+        // see http://www.openjs.com/articles/ajax_xmlhttp_using_post.php
+        var param = "assertion="+assertion;
+        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+       xhr.setRequestHeader("Content-length", param.length);
+       xhr.setRequestHeader("Connection", "close");
+       xhr.send(param); // for verification by your backend
+       xhr.onreadystatechange = simpleXhrSentinel(xhr); 
+    }
+
+    function signoutUser() {
+        // Your backend must return HTTP status code 200 to indicate successful
+        // sign out (usually the resetting of one or more session variables) and
+        // it must arrange for the binding of currentUser to 'null' when the page
+        // is reloaded
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "/xhr/sign-out", true);
+        xhr.send(null);
+        xhr.onreadystatechange = simpleXhrSentinel(xhr); 
+    }
+    // Go!
+    navigator.id.watch({
+        loggedInUser: currentUser,
+        onlogin: verifyAssertion,
+        onlogout: signoutUser 
+    });
+}());
+</script>
+    </body>
+</html>`)
+
+	expected_source := []byte("Sign in Signout Persona Demo Uses ws ottoengine Authenticated with Mozilla's Persona and via ottoengine")
+
+	if text := Flatten(page_source); bytes.Equal(expected_source, text) == false {
+		t.Errorf("Flatten() failed: %s\n", text)
+	}
+}
+
+func TestWordListHandling(t *testing.T) {
+	flattenedText := []byte("Sign in Signout Persona Demo Uses ws ottoengine Authenticated with Mozilla's Persona and via ottoengine")
+	wordlist := WordList(flattenedText)
+
+	if len(wordlist) != 15 {
+		t.Errorf("Expected 15 words: %d\n", len(wordlist))
 	}
 }
