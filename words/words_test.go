@@ -64,7 +64,7 @@ func TestFlatten(t *testing.T) {
 
 func TestsWordList(t *testing.T) {
 	src := []byte("<body><header>This si a test</header><h1>A title</h1><p>and a paragraph</p></body>")
-	expectedWords := [][]byte{[]byte("This"), []byte("si"), []byte("a"), []byte("test"), []byte("A"), []byte("title"), []byte("and"), []byte("paragraph")}
+	expectedWords := [][]byte{[]byte("si"), []byte("test"), []byte("title"), []byte("paragraph")}
 	s := Flatten(src)
 	w := WordList(s)
 	if w == nil {
@@ -244,8 +244,7 @@ func TestMoreCompletedHTMLProcessing(t *testing.T) {
 func TestWordListHandling(t *testing.T) {
 	flattenedText := []byte("Sign in Signout Persona Demo Uses ws ottoengine Authenticated with Mozilla's Persona and via ottoengine")
 	wordlist := WordList(flattenedText)
-
-	if len(wordlist) != 15 {
-		t.Errorf("Expected 15 words: %d\n", len(wordlist))
+	if len(wordlist) != 11 {
+		t.Errorf("Expected 11 words: %d\n", len(wordlist))
 	}
 }

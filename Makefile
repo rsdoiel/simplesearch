@@ -1,18 +1,23 @@
 
 test:
-	go test -v ./words
-	go test -v ./filelist
-	go test -v
-	golint makewordlist.go
+	gofmt -w words/words.go
 	golint words/words.go
+	gofmt -w words/words_test.go
 	golint words/words_test.go
+	go test -v ./words
+	gofmt -w filelist/filelist.go
 	golint filelist/filelist.go
+	gofmt -w filelist/filelist_test.go
 	golint filelist/filelist_test.go
+	go test -v ./filelist
+	gofmt -w makewordlist.go
+	golint makewordlist.go
 
-makewordlist: makewordlist.go words/words.go filelist/filelist.go
-	
-build:
+build: makewordlist.go words/words.go filelist/filelist.go
 	go build makewordlist.go
 
-clean:
+clean: makewordlist
 	rm makewordlist
+
+install: makewordlist.go
+	go install makewordlist.go

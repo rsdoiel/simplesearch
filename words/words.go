@@ -77,11 +77,6 @@ func Flatten(srcBytes []byte) []byte {
 	return bytes.Trim(re.ReplaceAll(bytes.Join(outSlice, []byte("")), []byte(" ")), delimitingCharacters)
 }
 
-// WordList scans HTML source and returns a list of words found.
-func WordList(srcBytes []byte) [][]byte {
-	return bytes.Split(srcBytes, []byte(" "))
-}
-
 func indexOfString(l []string, target string) int {
 	for i, s := range l {
 		if target == s {
@@ -110,6 +105,15 @@ func containsString(l []string, target string) bool {
 	return false
 }
 
+func containsBytes(l [][]byte, target []byte) bool {
+	for _, b := range l {
+		if bytes.Equal(b, target) == true {
+			return true
+		}
+	}
+	return false
+}
+
 func containsInt(l []int, i int) bool {
 	for _, j := range l {
 		if i == j {
@@ -117,6 +121,25 @@ func containsInt(l []int, i int) bool {
 		}
 	}
 	return false
+}
+
+// WordList scans HTML source and returns a list of words found.
+func WordList(srcBytes []byte) [][]byte {
+	outList := make([][]byte, 0, 0)
+	stopWords := [][]byte{
+		[]byte("and"),
+		[]byte("that"),
+		[]byte("the"),
+		[]byte("this"),
+		[]byte("via")}
+
+	inputList := bytes.Split(srcBytes, []byte(" "))
+	for _, w := range inputList {
+		if len(w) > 2 && containsBytes(stopWords, w) == false {
+			outList = append(outList, w)
+		}
+	}
+	return outList
 }
 
 // MergeWords - given a path and list of words update the Words datastructure
