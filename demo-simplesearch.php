@@ -1,6 +1,6 @@
 <?php
 /**
- * demo.php - read the files.json, inverted-wordlist.json file and
+ * demo.php - read the files.json, wordlist.json file and
  * offer a naive search implementation by find the interection of
  * of words in the request.
  */
@@ -8,7 +8,7 @@ if (php_sapi_name() !== 'cli') {
     die('demo.php is a command line tool.');
 }
 $files = json_decode(file_get_contents('files.json'), true);
-$words = json_decode(file_get_contents('inverted-wordlist.json'), true);
+$words = json_decode(file_get_contents('wordlist.json'), true);
 
 if (count($argv) < 2) {
     die('USAGE php demo.php SEARCH_WORDS');
