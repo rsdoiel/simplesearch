@@ -41,7 +41,7 @@ func TestGetDirectoryListing(t *testing.T) {
 
 func TestFindHTMLFiles(t *testing.T) {
 	rootDir := "../test-data"
-	expectedDirContents := []string{"../test-data/index.html", "../test-data/persona-demo.html"}
+	expectedDirContents := []string{"../test-data/index.html", "../test-data/persona-demo.html", "../test-data/hello-world.html"}
 	dirContents, err := FindHTMLFiles(rootDir)
 	if err != nil {
 		t.Error("FindHTMLFiles() returned an error: %v\n", err)

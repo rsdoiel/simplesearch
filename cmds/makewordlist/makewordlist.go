@@ -9,8 +9,8 @@
 package main
 
 import (
-	"./filelist"
-	"./words"
+	"../../filelist"
+	"../../words"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -77,5 +77,5 @@ func main() {
 		log.Fatal(err)
 	}
 	ioutil.WriteFile("files.json", []byte(fileList), 0664)
-	ioutil.WriteFile("inverted-wordlist.json", []byte(invertedWordList), 0664)
+	ioutil.WriteFile("wordlist.json", []byte(invertedWordList), 0664)
 }
