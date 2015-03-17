@@ -12,5 +12,13 @@ import (
 )
 
 func TestLatin1ToUtf8(t *testing.T) {
-	t.Error("TestLatin1ToUtf8() not implemented.")
+	expected := "This should convert to/from iso-8859-1 to UTF-8"
+	lat1 := make([]rune, len(expected))
+	for i, b := range expected {
+		lat1[i] = rune(b)
+	}
+	result, err := Latin1ToUtf8(lat1)
+	if result != expected {
+		t.Error(err)
+	}
 }

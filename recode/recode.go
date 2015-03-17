@@ -8,10 +8,13 @@ package recode
  * Released under the Simplified BSD License.
  */
 import (
-	"fmt"
+	"errors"
 )
 
-func Latin1ToUtf8(inFName string, outFname string) bool {
-	fmt.Println("Latin1ToUtf8() not implemented.")
-	return false
+func Latin1ToUtf8(in []byte) (string, error) {
+	buf := make([]rune, len(in))
+	for i, b := range in {
+		buf[i] = rune(b)
+	}
+	return string(buf), errors.New("Latin1ToUTf8() not implemented.")
 }

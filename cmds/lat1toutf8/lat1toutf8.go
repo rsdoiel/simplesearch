@@ -37,6 +37,12 @@ func askForHelp(args []string) bool {
 	return false
 }
 
+func recodeFile(inFilename, outFilename string) {
+	fmt.Printf("DEBUG inFIlename: %s, outFilename %s\n", inFilename, outFilename)
+	out, _ := recode.Latin1ToUtf8([]rune("Not implemented."))
+	fmt.Println(out)
+}
+
 func main() {
 	args := os.Args[1:]
 	if askForHelp(args) == true {
@@ -45,5 +51,5 @@ func main() {
 	if len(args) != 2 {
 		usage("Wrong number of arguments.", 1)
 	}
-	recode.Latin1ToUtf8(args[0], args[1])
+	recodeFile(args[0], args[1])
 }
