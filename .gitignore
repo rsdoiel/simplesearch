@@ -24,3 +24,7 @@ _testmain.go
 
 bin/*
 ws
+# Project specific files
+files.json
+wordlist.json
+makewordlist

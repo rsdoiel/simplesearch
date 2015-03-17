@@ -10,6 +10,11 @@ test: words/words.go filelist/filelist.go cmds/makewordlist/makewordlist.go stop
 	gofmt -w filelist/filelist_test.go
 	golint filelist/filelist_test.go
 	go test -v ./filelist
+	gofmt -w recode/recode.go
+	golint recode/recode.go
+	gofmt -w recode/recode_test.go
+	golint recode/recode_test.go
+	go test -v ./recode
 	gofmt -w stopwords/stopwords.go
 	golint stopwords/stopwords.go
 	gofmt -w stopwords/stopwords_test.go
